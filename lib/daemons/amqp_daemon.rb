@@ -29,15 +29,21 @@ end
 Signal.trap("INT",  &terminate)
 Signal.trap("TERM", &terminate)
 
+workers = []
 ARGV.each do |id|
-  worker= AMQPConfig.binding_worker(id)
-  queue = ch.queue *AMQPConfig.binding_queue(id)
+  worker = AMQPConfig.binding_worker(id)
+  queue  = ch.queue *AMQPConfig.binding_queue(id)
 
   if args = AMQPConfig.binding_exchange(id)
     x = ch.send *args
 
-    if args.first == 'direct'
+    case args.first
+    when 'direct'
       queue.bind x, routing_key: AMQPConfig.routing_key(id)
+    when 'topic'
+      AMQPConfig.topics(id).each do |topic|
+        queue.bind x, routing_key: topic
+      end
     else
       queue.bind x
     end
@@ -54,6 +60,13 @@ ARGV.each do |id|
       logger.fatal e.backtrace.join("\n")
     end
   end
+
+  workers << worker
+end
+
+Signal.trap("USR1") do
+  puts "USR1 received."
+  workers.each {|w| w.on_usr1 if w.respond_to?(:on_usr1) }
 end
 
 ch.work_pool.join

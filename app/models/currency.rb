@@ -25,4 +25,8 @@ class Currency < ActiveYaml::Base
     raise unless coin?
     blockchain.gsub('#{txid}', txid)
   end
+  
+  def rpc_url
+    eval rpc
+  end
 end

@@ -53,6 +53,9 @@ defaults: &defaults
   # PUSHER_APP: YOUR_PUSHER_APP
   # PUSHER_KEY: YOUR_PUSHER_KEY
   # PUSHER_SECRET: YOUR_PUSHER_SECRET
+  
+  # bitcoin rpc, should you have different entry for development and production enviroment
+  BTC_RPC: http://username:password@127.0.0.1:18332
 
 development:
   <<: *defaults
